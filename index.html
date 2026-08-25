@@ -1330,16 +1330,33 @@ function buatIkonAplikasi() {
   ctx.fillStyle = '#0D100F';
   ctx.fillRect(0, 0, 512, 512);
 
-  ctx.fillStyle = '#D8AD3E';
-  ctx.beginPath();
-  ctx.arc(256, 256, 190, 0, Math.PI * 2);
-  ctx.fill();
+  const emas = ctx.createLinearGradient(95, 85, 420, 430);
+  emas.addColorStop(0, '#F0D48A');
+  emas.addColorStop(.5, '#D8AD3E');
+  emas.addColorStop(1, '#A87F22');
 
-  ctx.fillStyle = '#0D100F';
-  ctx.font = '700 190px system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('Rp', 256, 268);
+  ctx.strokeStyle = 'rgba(216,173,62,.42)';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.roundRect(42, 42, 428, 428, 88);
+  ctx.stroke();
+
+  ctx.strokeStyle = emas;
+  ctx.lineWidth = 42;
+  ctx.lineCap = 'square';
+  ctx.beginPath();
+  ctx.moveTo(168, 142);
+  ctx.lineTo(168, 370);
+  ctx.moveTo(344, 142);
+  ctx.lineTo(344, 370);
+  ctx.moveTo(168, 256);
+  ctx.lineTo(344, 256);
+  ctx.stroke();
+
+  ctx.fillStyle = '#F0D48A';
+  ctx.beginPath();
+  ctx.arc(390, 122, 13, 0, Math.PI * 2);
+  ctx.fill();
 
   return kanvas.toDataURL('image/png');
 }
@@ -1351,6 +1368,12 @@ function pasangPWA() {
   touchIcon.rel = 'apple-touch-icon';
   touchIcon.href = ikonUrl;
   document.head.appendChild(touchIcon);
+
+  const favicon = document.createElement('link');
+  favicon.rel = 'icon';
+  favicon.type = 'image/png';
+  favicon.href = ikonUrl;
+  document.head.appendChild(favicon);
 
   const manifest = {
     name: 'Huyo',

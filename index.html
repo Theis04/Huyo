@@ -12,6 +12,9 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
@@ -130,7 +133,6 @@
   }
 
   /* ---------- Ringkasan ---------- */
-  .summary { padding: 26px 0 22px; border-bottom: 1px solid var(--rule); }
   .summary { background:linear-gradient(145deg,#1C211E,#0F1210 75%); border:1px solid var(--stroke-gold); border-radius:14px; padding:22px 18px; margin-top:22px; box-shadow:0 18px 36px -24px rgba(0,0,0,.9); }
   .total {
     font-family: "IBM Plex Mono", monospace;
@@ -260,7 +262,6 @@
 
   /* ---------- Form ---------- */
   .form {
-    background: var(--card);
     border: 1px solid var(--rule);
     border-radius: 10px;
     padding: 16px;
@@ -297,11 +298,9 @@
     font-size: 14px;
     font-weight: 600;
     color: #15130D;
-    background: var(--accent);
     border: none;
-    border-radius: 6px;
     cursor: pointer;
-    transition: background .15s ease, transform .1s ease;
+    transition: background .18s cubic-bezier(.32,.72,0,1), transform 120ms cubic-bezier(.32,.72,0,1);
   }
   .simpan:hover { background: #E8C45A; }
   .simpan:active { transform: scale(.98); }
@@ -1127,6 +1126,7 @@ function renderAnalitik(items, total) {
   const hariTerboros = Object.entries(perHari).sort((a, b) => b[1] - a[1])[0];
   const perKategori = {};
   items.forEach(item => { perKategori[item.kategori] = (perKategori[item.kategori] || 0) + item.jumlah; });
+  const urut = Object.entries(perKategori).sort((a, b) => b[1] - a[1]);
   const kategoriUtama = Object.entries(perKategori).sort((a, b) => b[1] - a[1])[0];
   const namaBulan = new Date(kunciBulan + '-01T00:00:00').toLocaleDateString('id-ID', { month:'long', year:'numeric' });
   const sisa = targetAnggaran - total;
@@ -1316,85 +1316,6 @@ document.querySelector('.tabbar').addEventListener('click', e => {
   const tombol = e.target.closest('button[data-tab]');
   if (tombol) tampilkanTab(tombol.dataset.tab);
 });
-
-/* =========================================================
-   8. PWA: IKON & MANIFEST (dibuat lewat canvas + blob URL)
-   ========================================================= */
-
-function buatIkonAplikasi() {
-  const kanvas = document.createElement('canvas');
-  kanvas.width = 512;
-  kanvas.height = 512;
-  const ctx = kanvas.getContext('2d');
-
-  ctx.fillStyle = '#0D100F';
-  ctx.fillRect(0, 0, 512, 512);
-
-  const emas = ctx.createLinearGradient(95, 85, 420, 430);
-  emas.addColorStop(0, '#F0D48A');
-  emas.addColorStop(.5, '#D8AD3E');
-  emas.addColorStop(1, '#A87F22');
-
-  ctx.strokeStyle = 'rgba(216,173,62,.42)';
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.roundRect(42, 42, 428, 428, 88);
-  ctx.stroke();
-
-  ctx.strokeStyle = emas;
-  ctx.lineWidth = 42;
-  ctx.lineCap = 'square';
-  ctx.beginPath();
-  ctx.moveTo(168, 142);
-  ctx.lineTo(168, 370);
-  ctx.moveTo(344, 142);
-  ctx.lineTo(344, 370);
-  ctx.moveTo(168, 256);
-  ctx.lineTo(344, 256);
-  ctx.stroke();
-
-  ctx.fillStyle = '#F0D48A';
-  ctx.beginPath();
-  ctx.arc(390, 122, 13, 0, Math.PI * 2);
-  ctx.fill();
-
-  return kanvas.toDataURL('image/png');
-}
-
-function pasangPWA() {
-  const ikonUrl = buatIkonAplikasi();
-
-  const touchIcon = document.createElement('link');
-  touchIcon.rel = 'apple-touch-icon';
-  touchIcon.href = ikonUrl;
-  document.head.appendChild(touchIcon);
-
-  const favicon = document.createElement('link');
-  favicon.rel = 'icon';
-  favicon.type = 'image/png';
-  favicon.href = ikonUrl;
-  document.head.appendChild(favicon);
-
-  const manifest = {
-    name: 'Huyo',
-    short_name: 'Huyo',
-    start_url: '.',
-    display: 'standalone',
-    background_color: '#0D100F',
-    theme_color: '#0D100F',
-    icons: [
-      { src: ikonUrl, sizes: '512x512', type: 'image/png' },
-      { src: ikonUrl, sizes: '192x192', type: 'image/png' }
-    ]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-  const manifestUrl = URL.createObjectURL(blob);
-
-  const manifestLink = document.createElement('link');
-  manifestLink.rel = 'manifest';
-  manifestLink.href = manifestUrl;
-  document.head.appendChild(manifestLink);
-}
 
 /* =========================================================
    9. EKSPOR & CADANGAN
@@ -1763,7 +1684,7 @@ el('targetDaftar').addEventListener('click', async e => {
   el('bulan').value = hariIni.slice(0, 7);
   el('setoranTanggal').value = hariIni;
 
-  pasangPWA();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
 
   await muatData();
   await muatTabungan();
